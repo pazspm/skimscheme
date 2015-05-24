@@ -143,6 +143,7 @@ environment =
           $ insert "/"              (Native numericDiv)
           $ insert "%"              (Native numericMod)  
           $ insert "lt?"            (Native isLowerDo)
+          $ insert "cons"           (Native cons)
             empty
  
 type StateT = Map String LispVal
@@ -213,6 +214,12 @@ numericSub [x] = if onlyNumbers [x]
 numericSub l = numericBinOp (-) l
  
 ----------------------- IMPLEMENTED ------------------------
+ 
+
+cons :: [LispVal] -> LispVal
+cons (a:(List b):[]) = List (a:b)
+cons _ = Error "Wrong usage of cons"
+ 
  
 isLowerDo :: [LispVal] -> LispVal
 isLowerDo l = if onlyNumbers l
