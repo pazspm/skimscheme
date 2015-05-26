@@ -144,6 +144,7 @@ environment =
           $ insert "%"              (Native numericMod)  
           $ insert "lt?"            (Native isLowerDo)
           $ insert "cons"           (Native cons)
+          $ insert "eqv?"           (Native equivalence)
             empty
  
 type StateT = Map String LispVal
@@ -249,7 +250,17 @@ numericMod :: [LispVal] -> LispVal
 numericMod [] = Number 1
 numericMod l = if hasZero l then Error "list has a zero."
                   else numericBinOp (mod) l
- 
+
+equivalence :: [LispVal] -> LispVal
+equivalence ((Bool x):(Bool y):[]) = Bool (x == y)
+equivalence ((Atom x):(Atom y):[]) = Bool (x == y)
+equivalence ((Number x):(Number y):[]) = Bool (x == y)
+equivalence ((String x):(String y):[]) = Bool (x == y)
+equivalence ((List []):(List []):[]) = Bool True
+equivalence ((List (a:ar)):(List (b:br)):[]) = Bool (getBool (equivalence [a, b]) && getBool(equivalence [(List ar), (List br)]))
+equivalence ((DottedList a ar):(DottedList b br):[]) = Bool (getBool(equivalence [(List a),(List b)]) && getBool(equivalence [ar, br]))
+equivalence ((_):(_):[]) = Bool False
+
 -------------------------------------------------------------
  
 -- We have not implemented division. Also, notice that we have not
