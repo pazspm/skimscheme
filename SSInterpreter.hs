@@ -59,14 +59,14 @@ eval env (List (Atom "set!":(Atom id):expr:[])) = stateLookup env id >>= (\v -> 
 
 eval env (List (Atom "set!":_:expr:[])) = return $ Error "[set!] Wrong arguments"
 
-
 eval env (List (Atom "let":(List vars):expr:[])) = 
   ST (\s -> 
-    let current  = union env s;
-        extended = prepareState current vars;
-        (ST f) = eval extended expr;
-        (result, newState) = f s;
-    in (result, newState)
+    let current  = union env s; -- env + state until the let
+        extended = prepareState current vars; -- env + state until let + let definitions
+        (ST f) = eval extended expr; 
+        (result, newState) = f s; -- state after let execution
+        afterState = union (difference newState extended) current; -- this removes all variables that were defined on the let procedure
+    in (result, afterState)
   )
 
 
