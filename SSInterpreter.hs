@@ -68,7 +68,6 @@ eval env (List (Atom "let":(List vars):expr:[])) =
         afterState = union (difference newState extended) current; -- this removes all variables that were defined on the let procedure
     in (result, afterState)
   )
-
 eval env (List (Atom "let":_:_:[])) = return $ Error "[let] Wrong arguments"
 
 eval env (List (Atom "if": cond : true : false:[])) = (eval env cond) >>= (\v -> case v of { 
