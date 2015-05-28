@@ -69,6 +69,7 @@ eval env (List (Atom "let":(List vars):expr:[])) =
     in (result, afterState)
   )
 
+eval env (List (Atom "let":_:_:[])) = return $ Error "[let] Wrong arguments"
 
 eval env (List (Atom "if": cond : true : false:[])) = (eval env cond) >>= (\v -> case v of { 
   (error@(Error _)) -> return error; 
@@ -81,6 +82,7 @@ eval env (List (Atom "if": cond : true:[])) = (eval env cond) >>= (\v -> case v 
   (Bool True) -> eval env true;
   otherwise -> return (List [])
 })
+
 
 -- The following line is slightly more complex because we are addressing the
 -- case where define is redefined by the user (whatever is the user's reason
