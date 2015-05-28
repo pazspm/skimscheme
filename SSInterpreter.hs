@@ -52,6 +52,24 @@ eval env lam@(List (Atom "lambda":(List formals):body:[])) = return lam
 
 eval env (List (Atom "comment":str)) = return (List [])
 
+eval env (List (Atom "set!":(Atom id):expr:[])) = stateLookup env id >>= (\v -> case v of {
+  (Error s) -> return $ Error ("[set!] " ++ s ++ " on id " ++ id);
+  otherwise -> defineVar env id expr
+})
+
+eval env (List (Atom "set!":_:expr:[])) = return $ Error "[set!] Wrong arguments"
+
+
+eval env (List (Atom "let":(List vars):expr:[])) = 
+  ST (\s -> 
+    let current  = union env s;
+        extended = prepareState current vars;
+        (ST f) = eval extended expr;
+        (result, newState) = f s;
+    in (result, newState)
+  )
+
+
 eval env (List (Atom "if": cond : true : false:[])) = (eval env cond) >>= (\v -> case v of { 
   (error@(Error _)) -> return error; 
   (Bool True) -> eval env true;
@@ -81,6 +99,12 @@ stateLookup env var = ST $
            id (Map.lookup var (union s env)
     ), s))
  
+prepareState :: StateT -> [LispVal] -> StateT
+prepareState env ((List ((Atom id):val:[]):[])) = insert id (getValFromST (eval env val) env) env
+prepareState env ((List ((Atom id):val:[]):ls)) = prepareState (insert id (getValFromST (eval env val) env) env) ls
+
+getValFromST :: StateTransformer LispVal -> StateT -> LispVal
+getValFromST (ST f) env = fst $ (f env)
  
 -- Because of monad complications, define is a separate function that is not
 -- included in the state of the program. This saves  us from having to make
