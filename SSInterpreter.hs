@@ -247,8 +247,10 @@ numericSub l = numericBinOp (-) l
  
 
 cons :: [LispVal] -> LispVal
-cons (a:(List b):[]) = List (a:b)
-cons _ = Error "Wrong usage of cons"
+cons (a:(List []):[]) = List [a]
+cons (a:(List ar):[]) =  List (a:ar)
+cons (a:(DottedList ar v):[]) = DottedList (a:ar) v
+cons _ = Error "wrong arguments at cons"
  
  
 isLowerDo :: [LispVal] -> LispVal
