@@ -269,6 +269,7 @@ isLower (Number a:Number b:ls) = Error "too many arguments"
 isLower _ = Error "too few arguments"
  
 numericDiv :: [LispVal] -> LispVal
+numericDiv ((Number x):[]) = numericBinOp (div) ((Number 1):(Number x):[])
 numericDiv ((Number x):(Number y):[]) = numericBinOp (div) ((Number x):(Number y):[])
 numericDiv _ = Error "wrongs arguments at divide"
  
