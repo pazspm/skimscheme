@@ -269,9 +269,8 @@ isLower (Number a:Number b:ls) = Error "too many arguments"
 isLower _ = Error "too few arguments"
  
 numericDiv :: [LispVal] -> LispVal
-numericDiv [] = Number 1
-numericDiv l =  if hasZero l then Error "list has a zero."
-                  else numericBinOp (div) l
+numericDiv ((Number x):(Number y):[]) = numericBinOp (div) ((Number x):(Number y):[])
+numericDiv _ = Error "wrongs arguments at divide"
  
 hasZero :: [LispVal] -> Bool
 hasZero [] = True
