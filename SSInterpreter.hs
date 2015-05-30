@@ -61,8 +61,8 @@ eval env (List (Atom "set!":_:expr:[])) = return $ Error "[set!] Wrong arguments
 
 eval env (List (Atom "let":(List vars):expr:[])) = 
   ST (\s -> 
-    let current  = union env s; -- env + state until the let
-        extended = prepareState current vars; -- env + state until let + let definitions
+    let current  = union env s; -- (env + state until the let)
+        extended = prepareState current vars; -- (env + state until let) + let definitions
         (ST f) = eval extended expr; 
         (result, newState) = f s; -- state after let execution
         afterState = union (difference newState extended) current; -- this removes all variables that were defined on the let procedure
@@ -81,6 +81,9 @@ eval env (List (Atom "if": cond : true:[])) = (eval env cond) >>= (\v -> case v 
   (Bool True) -> eval env true;
   otherwise -> return (List [])
 })
+
+eval env (List (Atom "if": cond : true:(h:t))) = return $ Error "[if] Wrong arguments"
+
 
 
 -- The following line is slightly more complex because we are addressing the
