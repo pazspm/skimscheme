@@ -79,9 +79,6 @@ eval env (List (Atom "if": cond : true:[])) = (eval env cond) >>= (\v -> case v 
   otherwise -> return (List [])
 })
 
-eval env (List (Atom "if": cond : true:(h:t))) = return $ Error "[if] Wrong arguments"
-
-
 
 -- The following line is slightly more complex because we are addressing the
 -- case where define is redefined by the user (whatever is the user's reason
