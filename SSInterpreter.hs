@@ -49,9 +49,6 @@ eval env (List (Atom "begin":[v])) = eval env v
 eval env (List (Atom "begin": l: ls)) = (eval env l) >>= (\v -> case v of { (error@(Error _)) -> return error; otherwise -> eval env (List (Atom "begin": ls))})
 eval env (List (Atom "begin":[])) = return (List [])
 eval env lam@(List (Atom "lambda":(List formals):body:[])) = return lam
-
-eval env (List (Atom "comment":str)) = return (List [])
-
 eval env (List (Atom "set!":(Atom id):expr:[])) = stateLookup env id >>= (\v -> case v of {
   (Error s) -> return $ Error ("[set!] " ++ s ++ " on id " ++ id);
   otherwise -> defineVar env id expr
@@ -173,6 +170,7 @@ environment =
           $ insert "lt?"            (Native isLowerDo)
           $ insert "cons"           (Native cons)
           $ insert "eqv?"           (Native equivalence)
+          $ insert "comment"           (Native comment)          
             empty
  
 type StateT = Map String LispVal
@@ -199,6 +197,9 @@ instance Monad StateTransformer where
 -- Includes some auxiliary functions. Does not include functions that modify
 -- state. These functions, such as define and set!, must run within the
 -- StateTransformer monad.
+ 
+comment :: [LispVal] -> LispVal
+comment _ = List []
  
 car :: [LispVal] -> LispVal
 car [List (a:as)] = a
