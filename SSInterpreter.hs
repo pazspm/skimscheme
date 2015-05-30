@@ -264,9 +264,8 @@ getBool (Bool b) = b
 getBool _ = True  
  
 isLower :: [LispVal] -> LispVal
-isLower [] = Bool True
 isLower (Number a:Number b:[]) = Bool (a < b)
-isLower (Number a:Number b:ls) = Error "more than two arguments"
+isLower (Number a:Number b:ls) = Error "too many arguments"
 isLower _ = Error "too few arguments"
  
 numericDiv :: [LispVal] -> LispVal
