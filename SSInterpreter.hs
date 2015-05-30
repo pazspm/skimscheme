@@ -170,7 +170,7 @@ environment =
           $ insert "lt?"            (Native isLowerDo)
           $ insert "cons"           (Native cons)
           $ insert "eqv?"           (Native equivalence)
-          $ insert "comment"           (Native comment)          
+          $ insert "comment"        (Native comment)          
             empty
  
 type StateT = Map String LispVal
