@@ -265,7 +265,7 @@ isLower (Number a:Number b:ls) = Error "too many arguments"
 isLower _ = Error "too few arguments"
  
 numericDiv :: [LispVal] -> LispVal
-numericMod [] = Error "wrong number of arguments, expected: (2 or 1) got: 0"
+numericDiv [] = Error "wrong number of arguments, expected: (2 or 1) got: 0"
 numericDiv [(Number a)] = Number (div 1 a)
 numericDiv l =  if hasZero l then Error "list has a zero."
                   else numericBinOp (div) l
