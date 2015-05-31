@@ -113,6 +113,7 @@ getValFromST (ST f) env = fst $ (f env)
 define :: StateT -> [LispVal] -> StateTransformer LispVal
 define env [(Atom id), val] = defineVar env id val
 define env [(List [Atom id]), val] = defineVar env id val
+define env ((List (Atom id:args)):body:[]) = defineVar env id (List [Atom "lambda",(List args), body])
 -- define env [(List l), val]                                      
 define env args = return (Error "wrong number of arguments")
 defineVar env id val =
