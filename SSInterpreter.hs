@@ -266,6 +266,7 @@ isLower _ = Error "too few arguments"
  
 numericDiv :: [LispVal] -> LispVal
 numericDiv [] = Number 1
+numericDiv [(Number a)] = Number (div 1 a)
 numericDiv l =  if hasZero l then Error "list has a zero."
                   else numericBinOp (div) l
  
