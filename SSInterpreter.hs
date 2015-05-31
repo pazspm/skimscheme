@@ -59,7 +59,7 @@ eval env (List (Atom "set!":_:expr:[])) = return $ Error "[set!] Wrong arguments
 eval env (List (Atom "let":(List vars):expr:[])) = 
   ST (\s -> 
     let current  = union env s; -- (env + state until the let)
-        extended = prepareState current vars; -- (env + state until let) + let definitions
+        extended = prepareState current env fvars; -- (env + state until let) + let definitions
         (ST f) = eval extended expr; 
         (result, newState) = f s; -- state after let execution
         afterState = union (difference newState extended) current; -- this removes all variables that were defined on the let procedure
@@ -97,9 +97,9 @@ stateLookup env var = ST $
            id (Map.lookup var (union s env)
     ), s))
  
-prepareState :: StateT -> [LispVal] -> StateT
-prepareState env ((List ((Atom id):val:[]):[])) = insert id (getValFromST (eval env val) env) env
-prepareState env ((List ((Atom id):val:[]):ls)) = prepareState (insert id (getValFromST (eval env val) env) env) ls
+prepareState :: StateT -> StateT -> [LispVal] -> StateT
+prepareState env1 env2 ((List ((Atom id):val:[]):[])) = insert id (getValFromST (eval env1 val) env1) env2
+prepareState env1 env2 ((List ((Atom id):val:[]):ls)) = prepareState env1 (insert id (getValFromST (eval env1 val) env1) env2) ls
 
 getValFromST :: StateTransformer LispVal -> StateT -> LispVal
 getValFromST (ST f) env = fst $ (f env)
