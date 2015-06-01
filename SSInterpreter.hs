@@ -65,6 +65,10 @@ eval env (List (Atom "let":(List vars):expr:[])) =
         afterState = union (difference newState extended) current; -- this removes all variables that were defined on the let procedure
     in (result, afterState)
   )
+  
+
+  
+  
 eval env (List (Atom "let":_:_:[])) = return $ Error "[let] Wrong arguments"
 
 eval env (List (Atom "if": cond : true : false:[])) = (eval env cond) >>= (\v -> case v of { 
@@ -97,9 +101,15 @@ stateLookup env var = ST $
            id (Map.lookup var (union s env)
     ), s))
  
+attributionCorrect :: [LispVal] -> Bool
+attributionCorrect ((List ((Atom v):val:[]):[])) = True
+attributionCorrect ((List ((Atom v):val:[]):ls)) =  attributionCorrect ls
+attributionCorrect _ = False
+ 
 prepareState :: StateT -> StateT -> [LispVal] -> StateT
 prepareState env1 env2 ((List ((Atom id):val:[]):[])) = insert id (getValFromST (eval env1 val) env1) env2
 prepareState env1 env2 ((List ((Atom id):val:[]):ls)) = prepareState env1 (insert id (getValFromST (eval env1 val) env1) env2) ls
+
 
 getValFromST :: StateTransformer LispVal -> StateT -> LispVal
 getValFromST (ST f) env = fst $ (f env)
