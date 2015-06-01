@@ -55,12 +55,15 @@ eval env (List (Atom "begin":[v])) = eval env v
 eval env (List (Atom "begin": l: ls)) = (eval env l) >>= (\v -> case v of { (error@(Error _)) -> return error; otherwise -> eval env (List (Atom "begin": ls))})
 eval env (List (Atom "begin":[])) = return (List [])
 eval env lam@(List (Atom "lambda":(List formals):body:[])) = return lam
+eval env clousure@(List (Atom "make-closure":(lam@(List (Atom "lambda":(List formals):body:[]))):[])) = return $ List [(State env) , lam]
 eval env (List (Atom "set!":(Atom id):expr:[])) = stateLookup env id >>= (\v -> case v of {
   (Error s) -> return $ Error ("[set!] " ++ s ++ " on id " ++ id);
   otherwise -> defineVar env id expr
 })
 
 eval env (List (Atom "set!":_:expr:[])) = return $ Error "[set!] Wrong arguments"
+
+
 
 eval env (List (Atom "let":(List vars):expr:[])) = 
   case (analyseLet vars) of {
@@ -104,6 +107,8 @@ eval env (List (Atom "define": args)) = maybe (define env args) (\v -> return v)
 eval env (List (Atom func : args)) = mapM (eval env) args >>= apply env func
 eval env (Error s)  = return (Error s)
 eval env form = return (Error ("Could not eval the special form: " ++ (show form)))
+--eval env x = return $ List [(State env), List [] ] 
+ 
  
 stateLookup :: StateT -> String -> StateTransformer LispVal
 stateLookup env var = ST $
@@ -135,7 +140,6 @@ prepareState :: StateT -> StateT -> [LispVal] -> StateT
 prepareState env1 env2 ((List ((Atom id):val:[]):[])) = insert id (getValFromST (eval env1 val) env1) env2
 prepareState env1 env2 ((List ((Atom id):val:[]):ls)) = prepareState env1 (insert id (getValFromST (eval env1 val) env1) env2) ls
 
-
 getValFromST :: StateTransformer LispVal -> StateT -> LispVal
 getValFromST (ST f) env = fst $ (f env)
  
@@ -149,6 +153,7 @@ define :: StateT -> [LispVal] -> StateTransformer LispVal
 define env [(Atom id), val] = defineVar env id val
 define env [(List [Atom id]), val] = defineVar env id val
 define env ((List (Atom id:args)):body:[]) = defineVar env id (List [Atom "lambda",(List args), body])
+--define env ((List (Atom )))
 -- define env [(List l), val]                                      
 define env args = return (Error "wrong number of arguments")
 defineVar env id val =
