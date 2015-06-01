@@ -63,8 +63,6 @@ eval env (List (Atom "set!":(Atom id):expr:[])) = stateLookup env id >>= (\v -> 
 
 eval env (List (Atom "set!":_:expr:[])) = return $ Error "[set!] Wrong arguments"
 
-
-
 eval env (List (Atom "let":(List vars):expr:[])) = 
   case (analyseLet vars) of {
   	"INCORRECT" -> return $ Error "[let] Incorrect pattern of attribution";
@@ -79,10 +77,6 @@ eval env (List (Atom "let":(List vars):expr:[])) =
 	  );
   }
 
-  
-
-  
-  
 eval env (List (Atom "let":_:_:[])) = return $ Error "[let] Wrong arguments"
 
 eval env (List (Atom "if": cond : true : false:[])) = (eval env cond) >>= (\v -> case v of { 
@@ -114,7 +108,7 @@ stateLookup :: StateT -> String -> StateTransformer LispVal
 stateLookup env var = ST $
   (\s ->
     (maybe (Error "variable does not exist.")
-           id (Map.lookup var (union s env)
+           id (Map.lookup var (union env s)
     ), s))
     
 dupplicatedAtom :: [LispVal] -> [String] -> Bool
