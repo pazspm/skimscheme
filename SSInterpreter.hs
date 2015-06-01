@@ -325,7 +325,7 @@ equivalence ((List []):(List []):[]) = Bool True
 equivalence ((List (a:ar)):(List (b:br)):[]) = Bool (getBool (equivalence [a, b]) && getBool(equivalence [(List ar), (List br)]))
 equivalence ((DottedList a ar):(DottedList b br):[]) = Bool (getBool(equivalence [(List a),(List b)]) && getBool(equivalence [ar, br]))
 equivalence ((_):(_):[]) = Bool False
-
+equivalence _ = Error "[eqv?] too few arguments "
 -------------------------------------------------------------
  
 -- We have not implemented division. Also, notice that we have not
