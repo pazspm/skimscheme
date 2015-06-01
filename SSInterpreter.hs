@@ -35,10 +35,16 @@ import Data.Map as Map
 import LispVal
 import SSParser
 import SSPrettyPrinter
+
+
  
 -----------------------------------------------------------
 --                      INTERPRETER                      --
 -----------------------------------------------------------
+
+
+
+
 eval :: StateT -> LispVal -> StateTransformer LispVal
 eval env val@(String _) = return val
 eval env val@(Atom var) = stateLookup env var
@@ -57,8 +63,9 @@ eval env (List (Atom "set!":(Atom id):expr:[])) = stateLookup env id >>= (\v -> 
 eval env (List (Atom "set!":_:expr:[])) = return $ Error "[set!] Wrong arguments"
 
 eval env (List (Atom "let":(List vars):expr:[])) = 
-  case (attributionCorrect vars) of {
-  	False -> return $ Error "[let] Incorrect pattern of attribution";
+  case (analyseLet vars) of {
+  	"INCORRECT" -> return $ Error "[let] Incorrect pattern of attribution";
+  	"DUPLICATED" -> return $ Error "[let] Duplicated var attribution";
   	otherwise ->  ST (\s -> 
 		let current  = union env s; -- (env + state until the let)
 		    extended = prepareState current env vars; -- (env + state until let) + let definitions
@@ -104,11 +111,25 @@ stateLookup env var = ST $
     (maybe (Error "variable does not exist.")
            id (Map.lookup var (union s env)
     ), s))
- 
+    
+dupplicatedAtom :: [LispVal] -> [String] -> Bool
+dupplicatedAtom [] already = False 
+dupplicatedAtom ((List ((Atom v):val:[]):ls)) already 
+	| elem v already = True
+	| otherwise = dupplicatedAtom ls (already++[v])
+	
+
 attributionCorrect :: [LispVal] -> Bool
 attributionCorrect ((List ((Atom v):val:[]):[])) = True
 attributionCorrect ((List ((Atom v):val:[]):ls)) =  attributionCorrect ls
 attributionCorrect _ = False
+
+analyseLet :: [LispVal] -> String
+analyseLet attributions 
+	| not (attributionCorrect attributions) = "INCORRECT"
+ 	| dupplicatedAtom attributions [] = "DUPLICATED"
+ 	| otherwise = "OKAY"
+
  
 prepareState :: StateT -> StateT -> [LispVal] -> StateT
 prepareState env1 env2 ((List ((Atom id):val:[]):[])) = insert id (getValFromST (eval env1 val) env1) env2
