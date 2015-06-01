@@ -174,7 +174,8 @@ apply env func args =
                       otherwise ->
                         (stateLookup env func >>= \res ->
                           case res of
-                            List (Atom "lambda" : List formals : body:l) -> lambda env formals body args                              
+                            List (Atom "lambda" : List formals : body:l) -> lambda env formals body args 
+                            List [State s , List (Atom "lambda" : List formals : body:l)] -> lambda s formals body args                                
                             otherwise -> return (Error $ func ++ " not a function.")
                         )
  
