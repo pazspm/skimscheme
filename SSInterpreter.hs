@@ -161,17 +161,21 @@ defineVar env id val =
 -- its third argument yields Nothing. In case it yields Just x, maybe
 -- applies its second argument f to x and yields (f x) as its result.
 -- maybe :: b -> (a -> b) -> Maybe a -> b
-apply :: StateT -> String -> [LispVal] -> StateTransformer LispVal
+apply :: StateT -> String -> [LispVal] -> StateTransformer LispVal               
 apply env func args =  
-                  case (Map.lookup func env) of
-                      Just (Native f)  -> return (f args)
-                      otherwise ->
-                        (stateLookup env func >>= \res ->
-                          case res of
-                            List (Atom "lambda" : List formals : body:l) -> lambda env formals body args 
-                            List [State s , List (Atom "lambda" : List formals : body:l)] -> lambda s formals body args                                
-                            otherwise -> return (Error $ func ++ " not a function.")
-                        )
+	case (Map.lookup func env) of
+	  Just (Native f)  -> return (f args)
+	  otherwise ->
+		(stateLookup env func >>= \res ->
+		  case res of
+		    List (Atom "lambda" : List formals : body:l) -> lambda env formals body args 
+		    List [State s , List (Atom "lambda" : List formals : body:l)] -> ST (\sp ->                    --  BOTAMOS ISSO AQUI PAULO -
+				let (ST fx) = lambda s formals body args;
+					current = union s sp;
+					(res, state) = fx s;
+				in (res,  union (union sp env) (difference state s )   ) )  
+		    otherwise -> return (Error $ func ++ " not a function.")
+		)
  
 -- The lambda function is an auxiliary function responsible for
 -- applying user-defined functions, instead of native ones. We use a very stupid
