@@ -169,7 +169,11 @@ apply env func args =
                         (stateLookup env func >>= \res ->
                           case res of
                             List (Atom "lambda" : List formals : body:l) -> lambda env formals body args 
-                            List [State s , List (Atom "lambda" : List formals : body:l)] -> lambda s formals body args                                
+                            List [State s , List (Atom "lambda" : List formals : body:l)] -> ST (\sp -> 
+                              let (ST fx) = lambda s formals body args;
+                                  (res, newState) = fx s;
+                              in (res, insert func (List [State newState, List (Atom "lambda" : List formals : body:l) ]) sp )
+                              )                                       
                             otherwise -> return (Error $ func ++ " not a function.")
                         )
  
