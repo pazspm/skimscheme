@@ -1,0 +1,103 @@
+-- Programs and expected outputs
+
+-- Program 1 -- 
+
+(begin 
+  (define f 
+    (lambda (x) (+ x 10))
+  ) 
+  (define result 
+    (f (car '(50 34 567 433 22 23 2345 "ok" (6 87 6))))
+  ) 
+  result
+)
+
+OUT:
+60
+
+-- Program 2 -- 
+
+(begin
+  (let ((i 1))
+    (define f 
+      (make-closure 
+        (lambda (y) 
+          (begin (set! i (+ i y)) i) 
+        )
+      )
+    )
+  )
+  (define val1 (f 1))
+  (define val2 (f 2))
+  (+ val1 val2) 
+  i
+)
+
+OUT:
+variable does not exist.
+
+-- Program 3 -- 
+
+(begin
+  (let ((i 1))
+    (define f 
+      (make-closure 
+        (lambda (y) 
+          (begin (set! i (+ i y)) i) 
+        )
+      )
+    )
+  )
+  (define val1 (f 1))
+  (define val2 (f 2))
+  (+ val1 val2) 
+)
+
+OUT:
+6
+
+-- Program 4 -- 
+
+(begin
+	(define f (lambda (x) (if (lt? x 0) 0 (+ x (f (- x 1))))))
+	(define x 10)
+	(f 5)
+)
+
+OUT:
+15
+
+
+-- Program 5 -- 
+
+(begin (define x 80) (let ((x 10)) (+ x x) ))
+
+OUT:
+20
+
+-- Program 6 -- 
+
+(begin (define fatorial (lambda (x) (if (lt? x 1) 1 (* x (fatorial (- x 1)))))) (fatorial 5))
+
+OUT:
+120
+
+-- Program 7 -- 
+
+(begin
+	(define f (lambda (x) (if (eqv? x 0) 0 (+ x (f (- x 1))))))
+	(f 5)
+)
+
+OUT:
+15
+
+
+
+
+
+
+
+
+
+
