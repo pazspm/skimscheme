@@ -170,7 +170,7 @@ apply env func args =
                           case res of
                             List (Atom "lambda" : List formals : body:l) -> lambda env formals body args 
                             List [State s , List (Atom "lambda" : List formals : body:l)] -> ST (\sp -> 
-                              let (ST fx) = lambda sp formals body args;
+                              let (ST fx) = lambda (env) formals body args; -- MUDEI AQUI ENV
                                   (res, newState) = fx s;
                               in (res , insert func (List [State newState, List (Atom "lambda" : List formals : body:l) ]) sp  )
                               )                                       

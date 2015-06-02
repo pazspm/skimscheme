@@ -2,6 +2,7 @@
 
 -- Program 1 -- 
 
+./SSInterpreter "
 (begin 
   (define f 
     (lambda (x) (+ x 10))
@@ -11,12 +12,13 @@
   ) 
   result
 )
+"
 
 OUT:
 60
 
 -- Program 2 -- 
-
+./SSInterpreter "
 (begin
   (let ((i 1))
     (define f 
@@ -32,12 +34,12 @@ OUT:
   (+ val1 val2) 
   i
 )
-
+"
 OUT:
 variable does not exist.
 
 -- Program 3 -- 
-
+./SSInterpreter "
 (begin
   (let ((i 1))
     (define f 
@@ -52,52 +54,57 @@ variable does not exist.
   (define val2 (f 2))
   (+ val1 val2) 
 )
-
+"
 OUT:
 6
 
 -- Program 4 -- 
-
+./SSInterpreter "
 (begin
 	(define f (lambda (x) (if (lt? x 0) 0 (+ x (f (- x 1))))))
 	(define x 10)
 	(f 5)
 )
-
+"
 OUT:
 15
 
 
 -- Program 5 -- 
-
+./SSInterpreter "
 (begin (define x 80) (let ((x 10)) (+ x x) ))
-
+"
 OUT:
 20
 
 -- Program 6 -- 
-
+./SSInterpreter "
 (begin (define fatorial (lambda (x) (if (lt? x 1) 1 (* x (fatorial (- x 1)))))) (fatorial 5))
-
+"
 OUT:
 120
 
 -- Program 7 -- 
-
+./SSInterpreter "
 (begin
 	(define f (lambda (x) (if (eqv? x 0) 0 (+ x (f (- x 1))))))
 	(f 5)
 )
-
+"
 OUT:
 15
 
 
+-- Program 8 -- 
+./SSInterpreter "
+(begin (define i 30) (let ((i 1)) (define f (make-closure (lambda ( y ) (begin (set! i (+ i y)) i))))) (define val1 (f 1)) (define val2 (f 2)) (set! i 100) (+ val1 val2))
+"
+OUT:
+6
 
-
-
-
-
-
-
-
+-- Program 9 --
+./SSInterpreter "
+(begin (define y 10) (define (square x) (* x x)) (let ((x 5) (y 7)) (define result (- (square y) (square x)))))
+"
+OUT:
+24
