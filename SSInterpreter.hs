@@ -36,6 +36,8 @@ import LispVal
 import SSParser
 import SSPrettyPrinter
 
+import Debug.Trace
+
 
  
 -----------------------------------------------------------
@@ -51,8 +53,19 @@ eval env val@(Atom var) = stateLookup env var
 eval env val@(Number _) = return val
 eval env val@(Bool _) = return val
 eval env (List [Atom "quote", val]) = return val
-eval env (List (Atom "begin":[v])) = eval env v
-eval env (List (Atom "begin": l: ls)) = (eval env l) >>= (\v -> case v of { (error@(Error _)) -> return error; otherwise -> eval env (List (Atom "begin": ls))})
+eval env (List (Atom "begin":[v])) = eval env v	
+eval env (List (Atom "begin": l: ls)) = ST $
+	(\s ->
+		let (ST f) = eval env l
+		    (result, newState) = f s
+		in case result of
+		    error@(Error _) -> (error, newState)
+		    otherwise ->
+		        let (ST f2) = eval (union newState env) (List (Atom "begin" : ls))
+		            (result2, newState2) = f2 newState
+		        in (result2, union newState2 newState)
+	)
+
 eval env (List (Atom "begin":[])) = return (List [])
 eval env lam@(List (Atom "lambda":(List formals):body:[])) = return lam
 eval env clousure@(List (Atom "make-closure":(lam@(List (Atom "lambda":(List formals):body:[]))):[])) = return $ List [(State env) , lam]
@@ -169,10 +182,19 @@ apply env func args =
                         (stateLookup env func >>= \res ->
                           case res of
                             List (Atom "lambda" : List formals : body:l) -> lambda env formals body args 
-                            List [State s , List (Atom "lambda" : List formals : body:l)] -> ST (\sp -> 
-                              let (ST fx) = lambda (env) formals body args; -- MUDEI AQUI ENV
-                                  (res, newState) = fx s;
-                              in (res , insert func (List [State newState, List (Atom "lambda" : List formals : body:l) ]) sp  )
+                            List [State s, lam@(List (Atom "lambda" : List formals : body:l))] -> ST (\sp -> 
+                              let allEnv = union s env;
+				  (ST fx) = lambda allEnv formals body args;
+                                  (res, newState) = fx (union allEnv sp);
+
+				  newClosureState = intersection newState s;
+
+				  (ST fy) = eval newClosureState (List [Atom "define", Atom func, List [Atom "make-closure", lam]]);
+				  (res2, newStateWithClosure ) = fy $ union newState $ union env sp;
+
+				  global = union ( difference newStateWithClosure (difference s env)) env;
+
+                              in (res , global)
                               )                                       
                             otherwise -> return (Error $ func ++ " not a function.")
                         )
@@ -207,7 +229,8 @@ environment =
           $ insert "lt?"            (Native isLowerDo)
           $ insert "cons"           (Native cons)
           $ insert "eqv?"           (Native equivalence)
-          $ insert "comment"        (Native comment)          
+          $ insert "comment"        (Native comment)
+	      $ insert "append"         (Native append)          
             empty
  
 type StateT = Map String LispVal
@@ -282,6 +305,9 @@ numericSub l = numericBinOp (-) l
  
 ----------------------- IMPLEMENTED ------------------------
  
+append :: [LispVal] -> LispVal
+append (List a:List b:[]) = List (a++b)
+append _ = Error "Append de miguel ta fudido"
 
 cons :: [LispVal] -> LispVal
 cons (a:(List ar):[]) =  List (a:ar)
