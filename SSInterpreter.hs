@@ -337,8 +337,8 @@ numericDiv l =  if hasZero l then Error "list has a zero."
                   else numericBinOp (div) l
  
 hasZero :: [LispVal] -> Bool
-hasZero [] = True
-hasZero (Number n:ns) = (n == 0) && (hasZero ns)
+hasZero [] = False
+hasZero (Number n:ns) = (n == 0) || (hasZero ns)
  
 numericMod :: [LispVal] -> LispVal
 numericMod [] = Error "wrong number of arguments, expected: 2 got: 0"
