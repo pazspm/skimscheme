@@ -307,7 +307,7 @@ numericSub l = numericBinOp (-) l
  
 append :: [LispVal] -> LispVal
 append (List a:List b:[]) = List (a++b)
-append _ = Error "Append de miguel ta fudido"
+append _ = Error "[appen!] wrong arguments"
 
 cons :: [LispVal] -> LispVal
 cons (a:(List ar):[]) =  List (a:ar)
