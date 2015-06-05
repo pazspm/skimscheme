@@ -310,6 +310,7 @@ append (List a:List b:[]) = List (a++b)
 append _ = Error "[appen!] wrong arguments"
 
 cons :: [LispVal] -> LispVal
+cons ((List ar):(List br):[]) = List (ar ++ br)
 cons (a:(List ar):[]) =  List (a:ar)
 cons (a:(DottedList ar v):[]) = DottedList (a:ar) v
 cons _ = Error "wrong arguments at cons"
